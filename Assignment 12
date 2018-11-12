@@ -1,0 +1,274 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "library(ggplot2)\n",
+    "library(caret)\n",
+    "library(lattice)\n",
+    "library(rpart)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Question 1a - Import and prepare adult dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "adult <-read.csv(\"C:/Users/student/Documents/Bryant/Senior '18-'19/R/adult.csv\", header = FALSE)\n",
+    "\n",
+    "colnames(adult)[1] <- \"Age\"\n",
+    "colnames(adult)[2] <- \"Workclass\"\n",
+    "colnames(adult)[3] <- \"fnlwgt\"\n",
+    "colnames(adult)[4] <- \"Education\"\n",
+    "colnames(adult)[5] <- \"Educationnum\"\n",
+    "colnames(adult)[6] <- \"Maritalstatus\"\n",
+    "colnames(adult)[7] <- \"Occupation\"\n",
+    "colnames(adult)[8] <- \"Relationship\"\n",
+    "colnames(adult)[9] <- \"Race\"\n",
+    "colnames(adult)[10] <- \"Sex\"\n",
+    "colnames(adult)[11] <- \"Capitalgain\"\n",
+    "colnames(adult)[12] <- \"Capitalloss\"\n",
+    "colnames(adult)[13] <- \"Hoursperweek\"\n",
+    "colnames(adult)[14] <- \"Nativecountry\"\n",
+    "colnames(adult)[15] <- \"Incomeclass\"\n",
+    "\n",
+    "for(i in 1:ncol(adult)) {\n",
+    "    adult[adult ==\" ?\"]= NA  \n",
+    "    blanks <- sum(is.na(adult[i]))\n",
+    "    if(blanks > 0){\n",
+    "      if(is.numeric(adult[[i]]) == TRUE) {\n",
+    "        adult = preProcess(adult, method = \"medianImpute\") \n",
+    "      }\n",
+    "      else {\n",
+    "        levels=unique(adult[,i])\n",
+    "        adult[,i][is.na(adult[,i])]=levels[which.max(tabulate(match(adult[,i], x = levels)))]\n",
+    "      }\n",
+    "    }\n",
+    "}"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Question 1b - Import and prepare titanic dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "titanic <- read.csv(\"C:/Users/student/Documents/Bryant/Senior '18-'19/R/titanic.csv\")\n",
+    "\n",
+    "titanic$PassengerId =  NULL\n",
+    "titanic$Ticket =  NULL\n",
+    "titanic$Name = NULL\n",
+    "titanic$Cabin = NULL\n",
+    "titanic$Survived = factor(titanic$Survived)\n",
+    "titanic$Pclass = factor(titanic$Pclass)\n",
+    "titanic$Age[is.na(titanic$Age)] = mean(titanic$Age, na.rm = TRUE)\n",
+    "levels(titanic$Embarked) = c(\"S\",\"C\",\"Q\",\"S\")\n",
+    "\n",
+    "for(i in 1:ncol(titanic)) {\n",
+    "    df[df ==\" ?\"]= NA  \n",
+    "    blanks <- sum(is.na(df[i]))\n",
+    "    if(blanks > 0){\n",
+    "      if(is.numeric(df[[i]]) == TRUE) {\n",
+    "        df = preProcess(df, method = \"medianImpute\") \n",
+    "      }\n",
+    "      else {\n",
+    "        levels=unique(df[,i])\n",
+    "        df[,i][is.na(df[,i])]=levels[which.max(tabulate(match(df[,i], x = levels)))]\n",
+    "      }\n",
+    "    }\n",
+    "}"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Question 2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "myGrid = expand.grid(mtry = c(1:2), splitrule = c(\"gini\"),\n",
+    "                     min.node.size = c(1:2))\n",
+    "set.seed(41)\n",
+    "rf_adult <- train(Incomeclass ~.,data = adult, method = \"ranger\", \n",
+    "               trControl = trainControl(method =\"cv\", number = 7, verboseIter = TRUE),\n",
+    "               tuneGrid = myGrid)\n",
+    "\n",
+    "rf_titanic <- train(Survived ~.,data = titanic, method = \"ranger\", \n",
+    "               trControl = trainControl(method =\"cv\", number = 7, verboseIter = TRUE),\n",
+    "               tuneGrid = myGrid)\n",
+    "\n",
+    "rf_adult\n",
+    "rf_titanic"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Question 3"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "dt_adult <- train(Incomeclass ~.,data = adult, method = \"rpart\", \n",
+    "               trControl = trainControl(method =\"cv\", number = 10, verboseIter =  TRUE))\n",
+    "\n",
+    "dt_titanic <- train(Survived ~.,data = titanic, method = \"rpart\", \n",
+    "               trControl = trainControl(method =\"cv\", number = 10, verboseIter = TRUE))\n",
+    "\n",
+    "dt_adult\n",
+    "dt_titanic"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 4"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "Fitting mtry = 2, splitrule = gini, min.node.size = 1 on full training set\n",
+    "Fitting mtry = 2, splitrule = gini, min.node.size = 2 on full training set"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 5"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plot(rf_adult)\n",
+    "plot(rf_titanic)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 6"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "myGrid2 = expand.grid(mtry = c(1:4), splitrule = c(\"gini\",\"extratrees\"),\n",
+    "                     min.node.size = c(1:5))\n",
+    "set.seed(41)\n",
+    "rf2_adult <- train(Incomeclass ~.,data = adult, method = \"ranger\", \n",
+    "               trControl = trainControl(method =\"cv\", number = 7, verboseIter = TRUE),\n",
+    "               tuneGrid = myGrid2)\n",
+    "\n",
+    "rf2_titanic <- train(Survived ~.,data = titanic, method = \"ranger\", \n",
+    "               trControl = trainControl(method =\"cv\", number = 7, verboseIter = TRUE),\n",
+    "               tuneGrid = myGrid2)\n",
+    "\n",
+    "rf2_adult\n",
+    "rf2_titanic"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 7"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plot(rf2_adult)\n",
+    "plot(rf2_titanic)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 8.\tCompare the performances of the default glmnet model and a tuned glmnet model. Do you achieve better performance in the tuned glmnet model?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "myGrid3=expand.grid(.alpha=0:1,.lambda=seq(0.001,1,length=10))\n",
+    "\n",
+    "model_glm_a=train(target~., data=adult, method=\"glmnet\")\n",
+    "model_glm2_a=train(target~., data=adult, method=\"glmnet\", tuneGrid=myGrid3)\n",
+    "plot(model_glm_a)\n",
+    "plot(model_glm2_a)\n",
+    "\n",
+    "model_glm_t=train(Survived~., data=titanic, method=\"glmnet\")\n",
+    "model_glm2_t=train(Survived~., data=titanic, method=\"glmnet\", tuneGrid=myGrid3)\n",
+    "plot(model_glm_t)\n",
+    "plot(model_glm2_t)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "3.5.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

@@ -1,0 +1,249 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##1.Download the adult dataset. Change its extension to .csv"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "adult=read.csv(\"C:/Users/student/Documents/Bryant/Senior '18-'19/R/adult.csv\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##2.Import to Rstudio setting the header = FALSE so that the first rows does not turn in to varaibles names."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "adult=read.csv(\"C:/Users/student/Documents/Bryant/Senior '18-'19/R/adult.csv\", header = FALSE)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##3. hange the variables' names to the appropriate ones. You can use function names(df) to access the variables names."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "colnames(adult) <- c(\"age\", \"workclass\", \"fnlwgt\", \"education\", \"education-num\", \"marital-status\", \"occupation\", \"relationship\", \"race\", \"sex\", \"capital-gain\", \"capital-loss\", \"hours-per-week\", \"native-country\", \"salary\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##4. Identify all the missing values. Notice that missing values can be in the form of \"NA\", \"?\", \".\" and so on\n",
+    "and \n",
+    "##5. Replacing numeric missing values by the mean of the corresponding variables, and categorical missing values by the mode of the corresponding variables."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "for(i in 1:ncol(adult)) {\n",
+    "    adult[adult ==\" ?\"]= NA  \n",
+    "    blanks <- sum(is.na(adult[i]))\n",
+    "    if(blanks > 0){\n",
+    "      if(is.numeric(adult[[i]]) == TRUE) {\n",
+    "         adult[[i]][is.na(adult[[i]])] <- mean(adult[[i]], na.rm = TRUE)\n",
+    "      }\n",
+    "      else {\n",
+    "        levels=unique(adult[,i])\n",
+    "        adult[,i][is.na(adult[,i])]=levels[which.max(tabulate(match(adult[,i], x = levels)))]\n",
+    "      }\n",
+    "    }\n",
+    "}\n",
+    "sample(adult)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##6.\tPerform data visualization on the data.  You should include, at least:\n",
+    "#-\tBar charts of two categorical variables\n",
+    "#-\tDensity curves of numeric variables on the categories of categorical variables.  For example: plotting density curves of Age on female and male."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "library(ggplot2)\n",
+    "ggplot(data = adult) + geom_bar(mapping = aes(x = sex, fill = education)) + facet_wrap(~education)\n",
+    "\n",
+    "ggplot(data = adult) + geom_bar(mapping = aes(x = education, fill = salary), position = \"dodge\")\n",
+    "\n",
+    "ggplot(data = adult) + geom_density(mapping=aes(x = age, fill = sex)) + facet_wrap(~sex)\n",
+    "\n",
+    "ggplot(data = adult) + geom_density(mapping=aes(x = age, fill = race)) + facet_wrap(~race)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##7.\tPartition the data into training and testing data with ratio train : test = 60 : 40"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "set.seed(101) # Set Seed so that same sample can be reproduced in future also\n",
+    "sample <- sample.int(n = nrow(adult), size = floor(.60*nrow(adult)), replace = F)\n",
+    "train <- adult[sample, ]\n",
+    "test  <- adult[-sample, ]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##8.\tBuild a decision tree model on the training data and test the model on the testing data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "library(rpart)\n",
+    "mytree <- rpart(targetvariable ~ ., data = train, method = \"class\")\n",
+    "pred <- predict(mytree,test, type = \"class\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##9.\tReport the misclassification rate and confusion table of the tree model"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "cm = confusionMatrix(data = pred, reference = test$target, positive = \" >50K\")\n",
+    "print(cm)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##10.\tPrint out the tree"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "library(rattle)\n",
+    "fancyRpartPlot(mytree)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##11.\tBuild tree model using caret package and report the confusion table"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model <- train(target~.,data =train, method = \"rpart\")\n",
+    "pred2=predict(model,test)\n",
+    "\n",
+    "cm2=confusionMatrix(pred2, test$target, positive=\" >50K\")\n",
+    "print(cm2)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##12.\tWrite a function, taking the input of training data percentage, to automate 7-10.  Apply the function with training data = 70%; 80%; 90%"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "trainfunction <- function(adult, trainpct){\n",
+    "  library(caret)\n",
+    "  library(rpart)\n",
+    "  library(rattle)\n",
+    "  \n",
+    "  splitIndex <- createDataPartition(adult$target, p = trainpct, list = FALSE, times = 1)\n",
+    "  train <- adult[ splitIndex,]\n",
+    "  test <- adult[-splitIndex,]\n",
+    "  mytree <- rpart(target ~ ., data = train, method = \"class\")\n",
+    "  pred <- predict(mytree,test, type = \"class\")\n",
+    "  cm = confusionMatrix(data = pred, reference = test$target, positive = \" >50K\")\n",
+    "  print(cm)\n",
+    "  fancyRpartPlot(mytree)\n",
+    "}\n",
+    "\n",
+    "trainfunction(adult, 0.7)\n",
+    "trainfunction(adult, 0.8)\n",
+    "trainfunction(adult, 0.9)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "3.5.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

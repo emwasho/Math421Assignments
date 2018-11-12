@@ -1,0 +1,329 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##1.Write a function that inputs a dataset(data frame) and outputs the number of missing values in each variable"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "titanic=read.csv(\"C:/Users/student/Documents/Bryant/Senior '18-'19/R/titanic.csv\")\n",
+    "titanic$Survived = factor(titanic$Survived)\n",
+    "titanic$Pclass = factor(titanic$Pclass)\n",
+    "titanic$Sex = factor(titanic$Sex)\n",
+    "\n",
+    "Missing <- function(x) {\n",
+    "  return(sum(is.na(x)))\n",
+    "}\n",
+    "Missing(dataset1$Age)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##2.Write a function that inputs a dataset and outputs the names of variables with missing values"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "MissingValues <- function(x) {\n",
+    "  return(names(which(colSums(is.na(x))>0)))\n",
+    "}\n",
+    "MissingValues(dataset1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##3. Write a function that inputs a dataset and outputs (1) the names of variables with missing values and (2) the corresponding number of missing values in each variables"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "SpecificMissingValues <- function(x) {\n",
+    "  Columns <- names(which(colSums(is.na(x))>0))\n",
+    "  Numbers <- sapply(x, function(x) sum(is.na(x)))\n",
+    "  list(Columns, Numbers)\n",
+    "}\n",
+    "SpecificMissingValues(dataset1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##4.Write a function that inputs a dataset and output a dataset with missing values handled as follows:Missing values of numeric variables are replaced by the means of the non-missing values in the variables... Missing values of categorical variables are replaced by the most frequent category in the variables"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "MVH=function(x){\n",
+    "  for (i in 1:ncol(x)){\n",
+    "    if (is.numeric(x[,i])){\n",
+    "      x[,i][is.na(x[,i])]=mean(x[,i], na.rm=TRUE)\n",
+    "    }else{\n",
+    "      levels=unique(x[,i])\n",
+    "      x[,i][is.na(x[,i])]=levels[which.max(tabulate(match(x[,i], levels)))]\n",
+    "    }\n",
+    "  }\n",
+    "  return (head(x))\n",
+    "}\n",
+    "MVH(dataset1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##5.Write a function that inputs a dataset and outputs (1) sub-dataset containing categorical variables and (2) sub-dataset containing numeric variables"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "InOut=function(x){\n",
+    "  num_vars=c()\n",
+    "  cat_vars=c()\n",
+    "  for (i in 1:ncol(x)){\n",
+    "    if(is.numeric(x[,i])){\n",
+    "      num_vars=c(num_vars,names(x)[i])\n",
+    "    }else{\n",
+    "      cat_vars=c(cat_vars,names(x)[i])\n",
+    "    }\n",
+    "  }\n",
+    "  num_data=x[num_vars]\n",
+    "  cat_data=x[cat_vars]\n",
+    "  print(head(num_data))\n",
+    "  print(head(cat_data))\n",
+    "}\n",
+    "InOut(dataset1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##6.Write a function that inputs a dataset and output density curves of all numeric variables"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "library(ggplot2)\n",
+    "\n",
+    "density_curve=function(x){\n",
+    "  for (i in 1:ncol(x)){\n",
+    "    if (is.numeric(x[,i])){\n",
+    "      print(ggplot(data=x)+geom_density(mapping=aes(x=x[,i]))+xlab(names(x)[i]))\n",
+    "    }\n",
+    "  }\n",
+    "}\n",
+    "density_curve(dataset1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##7.\tWrite a function that inputs a dataset and output bar charts of all categorical variables"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "barchart=function(x){\n",
+    "  for (i in 1:ncol(x)){\n",
+    "    if (!is.numeric(x[,i])){\n",
+    "      print(ggplot(data=x)+geom_bar(mapping=aes(x=x[,i]))+xlab(names(x)[i]))\n",
+    "    }\n",
+    "  }\n",
+    "}\n",
+    "barchart(dataset1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##8.\tWrite a function that inputs a dataset and two number i, j and outputs bar charts of column i and column j.  If either i or j are not categorical variables, output a message saying so"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "DeuxChart=function(x,i,j){\n",
+    "    if(is.numeric(x[,i]) | is.numeric(x[,j])){\n",
+    "      print(\"One or more of the columns are not categorical variables\")\n",
+    "    }else {\n",
+    "      print(ggplot(data=x)+geom_bar(mapping=aes(x=x[,i], fill=x[,j]),position = \"dodge\")+labs(x=names(x)[i],fill=names(x)[j]))\n",
+    "    }\n",
+    "  }\n",
+    "\n",
+    "DeuxChart(dataset1,2,3)\n",
+    "DeuxChart(dataset1,4,5) "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##9.\tWrite a function that inputs a dataset and two number i, j and outputs the scatter plot of column i and column j. If either i or j are not numeric variables, output a message saying so"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ScatterChart=function(x,i,j){\n",
+    "    if(!is.numeric(x[,i]) | !is.numeric(x[,j])){\n",
+    "      print(\"One or more of the columns are not numeric variables\")\n",
+    "    }else {\n",
+    "      print(ggplot(data=x)+geom_point(mapping=aes(x=x[,i], y=x[,j]))+labs(x=names(x)[i],y=names(x)[j]))\n",
+    "    }\n",
+    "}\n",
+    "\n",
+    "ScatterChart(dataset1,1,3)\n",
+    "ScatterChart(dataset1,2,5) \n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##10.\tWrite a function that inputs a dataset and two number i, j and output the density curves of column i partitioning on categories of column j. If the two columns are not suitable for the graph, print out the message saying so. \n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "DensityCurve2=function(x,i,j){\n",
+    "    if(!is.numeric(x[,i])){\n",
+    "      print(\"The input variable is not numeric\")\n",
+    "    }else if(is.numeric(x[,j])){\n",
+    "      print(\"The partitioning variable is not categorical\")\n",
+    "    }else{\n",
+    "      print(ggplot(data=x)+geom_density(mapping = aes(x=x[,1],color=x[,j]))+labs(x=names(x)[i],color=names(x)[j]))\n",
+    "    }\n",
+    "}\n",
+    "\n",
+    "DensityCurve2(dataset1,1,3)\n",
+    "DensityCurve2(dataset1,2,5) \n",
+    "DensityCurve2(dataset1,2,4"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##11.\tWrite a function that inputs a dataset and output all possible bar charts of pair of variables in the dataset. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "AllBarChart=function(x){\n",
+    "    for (i in 1:ncol(x)){\n",
+    "      if (!is.numeric(x[,i])){\n",
+    "        for(j in 1:ncol(x)){\n",
+    "          if (!is.numeric(x[,j]) & names(x)[j]!=names(x)[i]){\n",
+    "            print(ggplot(data=x)+geom_bar(mapping=aes(x=x[,i],fill=x[,j]),position=\"dodge\")+ labs(x=names(x)[i],fill=names(x)[j]))\n",
+    "          }\n",
+    "        }\n",
+    "      }\n",
+    "    }\n",
+    "}\n",
+    "AllBarChart(dataset1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##13.\tWrite a function that do visualization of a dataset, i.e. the function should output a set of several graphs of the variables"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "visualization=function(x){\n",
+    "  for (i in 1:ncol(x)){\n",
+    "      if (!is.numeric(x[,i])){\n",
+    "        for(j in 1:ncol(x)){\n",
+    "          if (!is.numeric(x[,j]) & names(x)[j]!=names(x)[i]){\n",
+    "            print(ggplot(data=x)+geom_bar(mapping=aes(x=x[,i],fill=x[,j]),position=\"dodge\")+ labs(x=names(x)[i],fill=names(x)[j]))\n",
+    "          }\n",
+    "        }\n",
+    "      }else{\n",
+    "        for(j in 1:ncol(x)){\n",
+    "          if (!is.numeric(x[,j])){\n",
+    "            print(ggplot(data=x)+geom_density(mapping=aes(x=x[,i],color=x[,j]))+labs(x=names(x)[i],color=names(x)[j]))\n",
+    "          }\n",
+    "        }\n",
+    "      }\n",
+    "  }\n",
+    "}\n",
+    "visualization(dataset1)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "3.5.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

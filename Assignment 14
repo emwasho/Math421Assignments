@@ -1,0 +1,241 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Question 1 quick_clean function that handles missing data by either remove observations with missing values or impute the missing values by the mean/mode of the corresponding columns.  You should avoid to use the “for” loop to write this function.  The input of this function is a data frame and a parameter indicating whether to impute or remove the missing values. The output of this function is a data frame without missing values. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "quick_clean = function(x,i)\n",
+    "{\n",
+    "    if(i==r)\n",
+    "    {\n",
+    "     x = x[complete.cases(x), ]\n",
+    "     return(x)\n",
+    "    }\n",
+    "    if(i==n)\n",
+    "    {\n",
+    "      colfix = function(y)\n",
+    "      {\n",
+    "        if(is.numeric(y) == TRUE)\n",
+    "        {\n",
+    "          y[is.na(y)] = mean(y, na.rm = TRUE)         \n",
+    "        }\n",
+    "        else\n",
+    "        {\n",
+    "          levels=unique(y)\n",
+    "          y[is.na(y)]=levels[which.max(tabulate(match(y, x = levels)))]\n",
+    "        }\n",
+    "        return(y)\n",
+    "      }\n",
+    "      x = lapply(x,colfix)\n",
+    "      return(data.frame(x))\n",
+    "    }\n",
+    "}\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "\\name{quick_clean}\n",
+    "\\alias{quick_clean}\n",
+    "%- Also NEED an '\\alias' for EACH other topic documented here.\n",
+    "\\title{\n",
+    "%%  ~~quick_clean ~~\n",
+    "}\n",
+    "\\description{\n",
+    "%%  ~~ quick_clean function that handles missing data by either remove observations with missing values or impute the missing values by the mean/mode of the corresponding columns.  You should avoid to use the “for” loop to write this function.  The input of this function is a data frame and a parameter indicating whether to impute or remove the missing values. The output of this function is a data frame without missing values.  ~~\n",
+    "}\n",
+    "\\usage{\n",
+    "quick_clean(x)\n",
+    "}\n",
+    "%- maybe also 'usage' for other objects documented here.\n",
+    "\\arguments{\n",
+    "  \\item{x}{\n",
+    "%%     ~~0 removes missing values. 1 imputes missing values with mean~~\n",
+    "}\n",
+    "}"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Question 2 quick_visual function.  The inputs of this function are a data frame and a number indicating one of the following tasks.  The functions should output one of the following plots depending the indicator parameter. \n",
+    "\n",
+    "##-\t(1) Plot all the possible the barcharts of two small categorical variables \n",
+    "##-\t(2) Plot all density curves of numeric variables partitioning on each small categorical variable \n",
+    "##-\t(3) Plot the scatter plots of  all possible pair of numeric variables\n",
+    "##Here small categorical variables are categorical variables that have less than 5 categories. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "quick_visual = function(x, i)\n",
+    "  {\n",
+    "    library(ggplot2)\n",
+    "    if(is.data.frame(x) & i==1)\n",
+    "    {\n",
+    "      cat = x[,sapply(x, is.factor)]\n",
+    "      checklevel = function(y)\n",
+    "      {\n",
+    "        l  = (length(unique(y)) < 5)\n",
+    "        return(l)\n",
+    "      }\n",
+    "      cat5 = cat[,sapply(cat, checklevel)]\n",
+    "      combin = combn(names(cat5), 2, simplify = TRUE)\n",
+    "      barcharts = function(z)\n",
+    "      {\n",
+    "        chart = ggplot(z) + geom_bar(mapping = aes(x=z[,1], fill=z[,2]), position = \"dodge\") + xlab(names(z[1])) + labs(fill = names(z[2]))\n",
+    "        return(chart)\n",
+    "      }\n",
+    "      printcharts = function(w)\n",
+    "      {\n",
+    "        barcharts(cat5[,w])\n",
+    "      }\n",
+    "      charts = apply(combin,2,printcharts)\n",
+    "      return(charts)\n",
+    "    }\n",
+    "    if(is.data.frame(x) & i==2)\n",
+    "    {\n",
+    "      for(i in 1:ncol(x))\n",
+    "      {\n",
+    "        for(j in 1:ncol(x))\n",
+    "        {\n",
+    "          if((class(x[[i]])) == \"numeric\")\n",
+    "          {\n",
+    "            if((class(x[[j]])) == \"factor\" & (length(unique(x[[j]]) < 5)))\n",
+    "            {\n",
+    "              print(ggplot(x) + geom_density(mapping = aes(x=x[[i]])) + facet_wrap(x[[j]]))\n",
+    "            }\n",
+    "          }\n",
+    "        }\n",
+    "      }\n",
+    "    }\n",
+    "    if(i==3)\n",
+    "    {\n",
+    "      num = x[,sapply(x, is.numeric)]\n",
+    "      combin = combn(names(num), 2, simplify = TRUE)\n",
+    "      barcharts = function(z)\n",
+    "      {\n",
+    "        chart = ggplot(z) + geom_point(mapping = aes(x=z[,1], y=z[,2])) + xlab(names(z[1])) + ylab(names(z[2]))\n",
+    "        return(chart)\n",
+    "      }\n",
+    "      printcharts = function(w)\n",
+    "      {\n",
+    "        barcharts(num[,w])\n",
+    "      }\n",
+    "      charts = apply(combin,2,printcharts)\n",
+    "      return(charts)\n",
+    "    }\n",
+    "  }"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "  \n",
+    "  \\name{quick_visual}\n",
+    "\\alias{quick_visual}\n",
+    "%- Also NEED an '\\alias' for EACH other topic documented here.\n",
+    "\\title{\n",
+    "%%  ~~quick_visual ~~\n",
+    "}\n",
+    "\\description{\n",
+    "%%  ~~ # Question 2 quick_visual function.  The inputs of this function are a data frame and a number indicating one of the following tasks.  The functions should output one of the following plots depending the indicator parameter. \n",
+    "\n",
+    "##-\t(1) Plot all the possible the barcharts of two small categorical variables \n",
+    "##-\t(2) Plot all density curves of numeric variables partitioning on each small categorical variable \n",
+    "##-\t(3) Plot the scatter plots of  all possible pair of numeric variables\n",
+    "##Here small categorical variables are categorical variables that have less than 5 categories.  ~~\n",
+    "}\n",
+    "\\usage{\n",
+    "quick_visual(x)\n",
+    "}\n",
+    "%- maybe also 'usage' for other objects documented here.\n",
+    "\\arguments{\n",
+    "  \\item{x}{\n",
+    "%%     ~~The code was used to plot different charts of the categorical and numeric variables~~\n",
+    "}\n",
+    "}\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Question 3 quick_model function that build a random forest using ranger package and output the accuracy "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "quick_model = function(x,i)\n",
+    "{\n",
+    "  library(ranger)\n",
+    "  library(caret)\n",
+    "  colnames(x)[i] = \"target\"\n",
+    "  Grid = expand.grid(mtry = 2, splitrule = c(\"gini\"), min.node.size = c(1:3))\n",
+    "  model = train(target~., x, method = \"ranger\", trControl = trainControl(method = \"cv\", number = 7), tuneGrid = Grid)\n",
+    "  return(max(model$results$Accuracy))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "\\name{quick_model}\n",
+    "\\alias{quick_model}\n",
+    "%- Also NEED an '\\alias' for EACH other topic documented here.\n",
+    "\\title{\n",
+    "%%  ~~quick_model ~~\n",
+    "}\n",
+    "\\description{\n",
+    "%%  ~~ # Question 3 quick_model function that build a random forest using ranger package and output the accuracy ~~\n",
+    "}\n",
+    "\\usage{\n",
+    "quick_model(x)\n",
+    "}\n",
+    "%- maybe also 'usage' for other objects documented here.\n",
+    "\\arguments{\n",
+    "  \\item{x}{\n",
+    "%%     ~~This model is used to build random forests with the ranger package.~~\n",
+    "}\n",
+    "}"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "3.5.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

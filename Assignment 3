@@ -1,0 +1,340 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    " ##Read data and correct variable types\n",
+    "library(ggplot2)\n",
+    "titanic=read.csv(\"C:/Users/student/Documents/Bryant/Senior '18-'19/R/titanic.csv\")\n",
+    "titanic$Survived = factor(titanic$Survived)\n",
+    "titanic$Pclass = factor(titanic$Pclass)\n",
+    "titanic$Sex = factor(titanic$Sex)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 1-2\n",
+    "Check for missing data and replace missing data with mean"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "summary(is.na(titanic))\n",
+    "mean_age = mean(titanic$Age, na.rm = TRUE)\n",
+    "titanic[is.na(titanic$Age),]$Age = mean_age"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 3-4\n",
+    "Remove the rows that have missing categorical values and remove unnecessary columns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "titanic[,1] = NULL\n",
+    "titanic[,\"Ticket\"] = NULL\n",
+    "titanic[,\"Cabin\"] = NULL\n",
+    "titanic = na.omit(titanic)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 5"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "mean(titanic$Age)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 6"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "mean(titanic[titanic$Sex == \"female\",]$Age) "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 7"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "median(titanic[titanic$Pclass == \"1\",]$Fare) "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 8"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "median(titanic[titanic$Sex == \"female\" & titanic$Pclass != \"1\",]$Fare)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 9"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "median(titanic[titanic$Survived == \"1\" & titanic$Sex == \"female\" & titanic$Pclass != \"3\",]$Age) "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 10"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "mean(titanic[titanic$Sex == \"female\" & titanic$Survived == \"1\" & titanic$Age >= \"13\" & titanic$Age < \"20\",]$Fare)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 11"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "mean(titanic[titanic$Sex == \"female\" & titanic$Survived == \"1\" & titanic$Age >= \"13\" & titanic$Age < \"20\" & titanic$Pclass == \"1\",]$Fare)\n",
+    "\n",
+    "mean(titanic[titanic$Sex == \"female\" & titanic$Survived == \"1\" & titanic$Age >= \"13\" & titanic$Age < \"20\" & titanic$Pclass == \"2\",]$Fare)\n",
+    "\n",
+    "mean(titanic[titanic$Sex == \"female\" & titanic$Survived == \"1\" & titanic$Age >= \"13\" & titanic$Age < \"20\" & titanic$Pclass == \"3\",]$Fare)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 12"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "avgfare = mean(titanic$Fare)\n",
+    "sum(titanic$Survived == 1 & titanic$Fare > avgfare) / sum(titanic$Survived != 1 & titanic$Fare > avgfare)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 13"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "avgfare = mean(titanic$Fare)\n",
+    "stdevfare = sd(titanic$Fare)\n",
+    "titanic$sfare <- (titanic$Fare - avgfare) / stdevfare"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 14"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "t2 = titanic[titanic$Age < mean(titanic$Age, na.rm = TRUE),]\n",
+    "ggplot(data = t2) + geom_bar(mapping = aes( x = Sex, fill = Survived), position = \"dodge\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 15"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "t3 = titanic[titanic$Fare > avgfare & titanic$Survived == 1,]\n",
+    "ggplot(data = t3)+geom_density(mapping = aes( x = Age))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 16"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "t4 = titanic[titanic$Embarked != \"C\",]\n",
+    "ggplot(data = t4)+geom_density(mapping = aes( x = Embarked))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 17"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "titanic$cfare <- ifelse(titanic$Fare > avgfare,\"expensive\", ifelse(titanic$Fare < \"cheap\",\"\"))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 18"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "titanic$cage =  titanic$Age\n",
+    "titanic$cage[(titanic$cage >0) & (titanic$cage <=10)] = 0\n",
+    "titanic$cage[(titanic$cage >10) & (titanic$cage <=20)] = 1\n",
+    "titanic$cage[(titanic$cage >20) & (titanic$cage <=30)] = 2\n",
+    "titanic$cage[(titanic$cage >30) & (titanic$cage <=40)] = 3\n",
+    "titanic$cage[(titanic$cage >40) & (titanic$cage <=50)] = 4\n",
+    "titanic$cage[(titanic$cage >50) & (titanic$cage <=60)] = 5\n",
+    "titanic$cage[(titanic$cage >60) & (titanic$cage <=70)] = 6\n",
+    "titanic$cage[(titanic$cage >70) & (titanic$cage <=80)] = 7"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Question 19"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "t5 = titanic[titanic$Fare > avgfare,]\n",
+    "ggplot(data = t5)+geom_bar(mapping = aes( x = Sex, fill = Survived), position = \"dodge\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "3.5.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
