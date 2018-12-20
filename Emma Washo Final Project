@@ -607,6 +607,13 @@
     "Conclusion\n",
     "The overall best model which was implemented on this data was the random forest. There was no pre-processing. The resampling was cross-validated (2 fold). The summary of the sample sizes were 64,940 and 64,940. The mtry was 19. The splitrule was gini. The Accuracy was 0. 0.9190253. The tuning parameter was min.node.size, which held a constant value of 1. The was preformed using the median data set. The data was based on a scales of 0 to 5. Zero being not applicable and 5 being satisfied. \n"
    ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
   }
  ],
  "metadata": {
