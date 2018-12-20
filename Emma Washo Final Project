@@ -1,0 +1,629 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Emma Washo Final Paper\n",
+    "Emma Washo\n",
+    "December 19, 2018\n",
+    "Introduction\n",
+    "Problem\n",
+    "The purpose of this project is to use satisfaction feedback data collected from passengers on a US airline to find which aspects they find the most enjoyable. This data is important to know because it could help airlines increase sales. There are other works done on airline satisfaction. Researchgate, NYC data science, and white rose are three examples of others working on the same problem.\n",
+    "Introduction to variables\n",
+    "The data for this project came from kaggle. The data came from a collection of surveys given to clients after their trip with the airline. The target variable for this project is satisfaction. This variable is broken into satisfied and neutral/dissatisfied. The variables for the data are iD, Satisfaction, Type of Travel, Class, Flight Distance, Seat comfort, Departure/Arrival time convenient, Food and drink, Gate location, Inflight wifi service, Inflight entertainment, Online support, Ease of Online booking, On-board service, Leg room service, Baggage handling, Checkin service, Cleanliness, Online boarding, Departure Delay in Minutes, and Arrival Delay in Minutes. The data contains 129,880 observations and 23 variables. Satisfaction is the airline satisfaction level, broken into satisfied and neutral or dissatisfied. Age is the actual age of the passengers. Gender is the gender of the passengers broken up into male and female. Type of tral is the purpose of the flight of the passengers, broken into personal travel and business travel. Class is the travel class in the plane of the passengers broken into business, eco, and eco plus. Flight Distance is the flight distance of the journey. Seat comfort is based on the satifcation of the seat. Departure and Arrival time convenient is based on the satisfaction of the arrival and departure time. Food and drink is the satisfaction of the food and drink provided on the flight. Gate location is the level of satisfaction of the gate location. Inflight wifi service is the satisfaction level of the inflight wifi service, which is scaled from 0 to 5, 0 being not applicable. Inflight entertainment is the satisfaction of the inflight entertainment. Online support is the satisfaction level of online support. Ease of Online booking is the satisfaction level of online booking. On-board service is the satisfaction level of the on-board process. Leg room service is the satifaction with the leg room in their seated area. Baggage handling is the level of satisfaction with the baggage handling. Checkin service is the level of satisfaction of the check-in service. Cleanliness refers to the cleanliness of the plane. Online boarding refers to the ease of online boarding. Departure Delay in Minutes is the amount of minutes the departure was delayed. Arrival Delay in Minutes is the amount of minutes the arrival was delayed.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Load Packages\n",
+    "Load all packages into R. The packages required were ggplot2, lattice, caret, and RANN\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "library(ggplot2)\n",
+    "## Warning: package 'ggplot2' was built under R version 3.5.1\n",
+    "library(lattice)\n",
+    "## Warning: package 'lattice' was built under R version 3.5.1\n",
+    "library(caret)\n",
+    "## Warning: package 'caret' was built under R version 3.5.1\n",
+    "library(RANN)\n",
+    "## Warning: package 'RANN' was built under R version 3.5.1\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Read and Prepare Data for Imputation\n",
+    "The following steps read and import the flight satisfaction data saved as “Final_Data”. Assign the data to the name “satisfaction”. This step also corrects the data. The variable iD was set to NULL. The colnames in rows 1, 3, 5, 22, and 23 were changed.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "satisfaction = read.csv(\"C:/Users/student/Documents/Bryant/Senior '18-'19/R/Final_Data.csv\")\n",
+    "\n",
+    "for(x in 1:ncol(satisfaction)) {\n",
+    "  colnames(satisfaction)[x] <- tolower(colnames(satisfaction)[x])\n",
+    "}\n",
+    "\n",
+    "satisfaction$id <- NULL\n",
+    "colnames(satisfaction)[1] <- \"target\"\n",
+    "colnames(satisfaction)[3] <- \"customertype\"\n",
+    "colnames(satisfaction)[5] <- \"traveltype\"\n",
+    "colnames(satisfaction)[22] <- \"departdelay\"\n",
+    "colnames(satisfaction)[23] <- \"arrivaldelay\"\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Data Visualization\n",
+    "Graph of Density of Flight Distance\n",
+    "This is a single variable density graph. This graph uses the variable flight distance.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Single Variable\n",
+    "ggplot(data = satisfaction) + geom_density(mapping = aes(x = flight.distance)) + ggtitle(\"Density of Flight Distance\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Count of Target\n",
+    "This is a single variable graph, the variable used for this graph was the target: satisfaction. It is a bar graph of the count.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Single Variable\n",
+    "ggplot(data = satisfaction) + geom_bar(mapping = aes(x = target)) + ggtitle(\"Count of Target\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Travel Class\n",
+    "This is a two variable bar graph, showing both the satisfaction and class.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Two Variables\n",
+    "ggplot(data = satisfaction) + geom_bar(mapping = aes(x = class, fill = target), position = \"dodge\")  + ggtitle(\"Satisfaction by Travel Class\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Histogram of Satisfaction by Age\n",
+    "This is a two variable histogram, using age and satisfaction.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Two Variables\n",
+    "ggplot(data = satisfaction) + geom_histogram(binwidth = 5, mapping = aes(x = age, fill = target), position = \"dodge\")  + ggtitle(\"Histogram of Satisfaction by Age\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Level of Seat Comfort by Gender\n",
+    "This is a two variable bar graph using the variables seat comfort and gender.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Two Variables\n",
+    "ggplot(data = satisfaction) + geom_bar(mapping = aes(x = seat.comfort, fill = gender), position = \"dodge\") + ggtitle(\"Level of Seat Comfort by Gender\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Gender\n",
+    "This is bar graph using two variables: satisfaction and gender.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Two Variables\n",
+    "ggplot(data = satisfaction) + geom_bar(mapping = aes(x = target, fill = gender), position = \"dodge\")+ ggtitle(\"Satisfaction by Gender\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Travel Type\n",
+    "This is a two variable bar graph using travel type and satisfaction.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ggplot(data = satisfaction) + geom_bar(mapping = aes(x = traveltype, fill = target), position = \"dodge\")+ ggtitle(\"Satisfaction by Travel Type\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Customer Type\n",
+    "This is a two variable bar graph showing customer type and satisfaction.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Two Variables\n",
+    "ggplot(data = satisfaction) + geom_bar(mapping = aes(x = customertype, fill = target), position = \"dodge\") + ggtitle(\"Satisfaction by Customer Type\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Density of Flight Distance by Satisfaction\n",
+    "This is a two variables density graph using the flight distance and satisfaction.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Two Variables\n",
+    "ggplot(data = satisfaction) + geom_density(mapping = aes(x = flight.distance, fill = target), position = \"dodge\") + ggtitle(\"Density of Flight Distance by Satisfaction\") \n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Ease of Gate Location Relative to Class Flied\n",
+    "This is a three variale histogram of satisfaction by Ease of Gate Location Relative to Class Flied.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Three Variables\n",
+    "ggplot(data = satisfaction) + geom_histogram(binwidth = 1, mapping = aes(x = gate.location, fill = target), position = \"dodge\") + facet_wrap(~class) + ggtitle(\"Satisfaction by Ease of Gate Location Relative to Class Flied\") \n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Gender and Quality of Seat Comfort\n",
+    "This is a three variable histogram graphing satisfaction by gender and quality of seat comfort.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Three Variables\n",
+    "ggplot(data = satisfaction) + geom_histogram(binwidth = 1, mapping = aes(x = seat.comfort, fill = target), position = \"dodge\") + facet_wrap(~gender) + ggtitle(\"Satisfaction by Gender and Quality of Seat Comfort\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Gender and Quality of Food and Drink\n",
+    "This is a three variable histogram of satisfaction by gender and quality of food and drink.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Three Variables\n",
+    "ggplot(data = satisfaction) + geom_histogram(binwidth = 1, mapping = aes(x = food.and.drink, fill = target), position = \"dodge\") + facet_wrap(~gender) + ggtitle(\"Satisfaction by Gender and Quality of Food and Drink\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Gender and Quality of WiFi\n",
+    "This is a three variable histogram of satisfaction by gender and quality of wifi.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Three Variables\n",
+    "ggplot(data = satisfaction) + geom_histogram(binwidth = 1, mapping = aes(x = inflight.wifi.service, fill = target), position = \"dodge\") + facet_wrap(~gender) + ggtitle(\"Satisfaction by Gender and Quality of WiFi\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Gender and Cleanliness\n",
+    "This is a three variable histogram comparing satisfaction by gender and cleanliness.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Three Variables\n",
+    "ggplot(data = satisfaction) + geom_histogram(binwidth = 1, mapping = aes(x = cleanliness, fill = target), position = \"dodge\") + facet_wrap(~gender)  + ggtitle(\"Satisfaction by Gender and Cleanliness\") \n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Quality of Entertainment Relative to Loyalty\n",
+    "This is a three variable histogram of satisfaction by quality of entertainment relative to loyalty.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Three Variables\n",
+    "ggplot(data = satisfaction) + geom_histogram(binwidth = 1, mapping = aes(x = inflight.entertainment, fill = target), position = \"dodge\") + facet_wrap(~customertype)  + ggtitle(\"Satisfaction by Quality of Entertainment Relative to Loyalty\") \n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Baggage Handling Relative to Type of Travel\n",
+    "This is a three variable histogram graphing satisfaction by baggage handling and type of travel.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Three Variables\n",
+    "ggplot(data = satisfaction) + geom_histogram(binwidth = 1, mapping = aes(x = baggage.handling, fill = target), position = \"dodge\") + facet_wrap(~traveltype)  + ggtitle(\"Satisfaction by Baggage Handling Relative to Type of Travel\") \n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Graph of Satisfaction by Gender and Quality of Leg Room\n",
+    "This is a three variable histogram of satisfaction by gender and quality.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Three Variables\n",
+    "ggplot(data = satisfaction) + geom_histogram(binwidth = 1, mapping = aes(x = leg.room.service, fill = target), position = \"dodge\") + facet_wrap(~gender)  + ggtitle(\"Satisfaction by Gender and Quality of Leg Room\") \n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Factor Variables\n",
+    "This step is turning the variables from integers into factors. After this step, the variables age, flight distance, depart delay, and arrival delay are the only remaining variables. The rest of the variables are factors.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "satisfaction$seat.comfort = as.factor(satisfaction$seat.comfort)\n",
+    "satisfaction$departure.arrival.time.convenient = as.factor(satisfaction$departure.arrival.time.convenient)\n",
+    "satisfaction$food.and.drink  = as.factor(satisfaction$food.and.drink)\n",
+    "satisfaction$gate.location = as.factor(satisfaction$gate.location)\n",
+    "satisfaction$inflight.wifi.service = as.factor(satisfaction$inflight.wifi.service)\n",
+    "satisfaction$inflight.entertainment = as.factor(satisfaction$inflight.entertainment)\n",
+    "satisfaction$online.support = as.factor(satisfaction$online.support)\n",
+    "satisfaction$ease.of.online.booking = as.factor(satisfaction$ease.of.online.booking)\n",
+    "satisfaction$on.board.service  = as.factor(satisfaction$on.board.service)\n",
+    "satisfaction$leg.room.service  = as.factor(satisfaction$leg.room.service)\n",
+    "satisfaction$baggage.handling  = as.factor(satisfaction$baggage.handling)\n",
+    "satisfaction$checkin.service  = as.factor(satisfaction$checkin.service)\n",
+    "satisfaction$cleanliness  = as.factor(satisfaction$cleanliness)\n",
+    "satisfaction$online.boarding  = as.factor(satisfaction$online.boarding)\n",
+    "\n",
+    "str(satisfaction)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Imput missing values\n",
+    "There are three different methods implemented on handling missing values. The first method is using the median of the data to replace the missing variables. The function ‘medianImpute’ was used. The median is the middle number within the data already there. The second method used to replace the missing values is bagging. The function used is ‘bagImpute’. Bagging is used to improve the stability and accuracy by avoiding overfitting and reducing variance. The third method used to replace variables was nearest neighbor method. The function ‘knnImput’ was used for this step. The nearest neighbor method is a method used to find the closest value to a given point. All three models produce zero missing values once run, which is the goal.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "preProcess_med <- preProcess(satisfaction, method = 'medianImpute')\n",
+    "MedData <- predict(preProcess_med, newdata = satisfaction)\n",
+    "sum(is.na(MedData))\n",
+    "## [1] 0\n",
+    "preProcess_bag <- preProcess(satisfaction, method = 'bagImpute')\n",
+    "BagData <- predict(preProcess_bag, newdata = satisfaction)\n",
+    "sum(is.na(BagData))\n",
+    "## [1] 0\n",
+    "preProcess_knn <- preProcess(satisfaction, method = 'knnImpute')\n",
+    "KnnData <- predict(preProcess_knn, newdata = satisfaction)\n",
+    "sum(is.na(KnnData))\n",
+    "## [1] 0\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Decision Trees on Imputation Methods\n",
+    "After testing all three different methods used to replace missing variables, the Median function provided the best accuracy. The median data will be used going forward throughout the rest of the project. This was based upon the three tests. The accuracy for the MedData was 0.8284416. The accuracy for the bagging process was 0.8240221. The accuracy for the nearest neighbor method was 0.8276571.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "imputedt1 <- train(target ~.,data = MedData, method = \"rpart\", trControl = trainControl(method =\"cv\", number = 3, verboseIter =  TRUE))\n",
+    "imputedt2 <- train(target ~.,data = KnnData, method = \"rpart\", trControl = trainControl(method =\"cv\", number = 3, verboseIter =  TRUE))\n",
+    "imputedt3 <- train(target ~.,data = BagData, method = \"rpart\", trControl = trainControl(method =\"cv\", number = 3, verboseIter =  TRUE))\n",
+    "imputedt1\n",
+    "imputedt2\n",
+    "imputedt3"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Recode Categorical Variables\n",
+    "This step is recoding the categorical variables into bad, medium, and good. The purpose of this step is the reduce the data set, improve accuracy, and improve efficiency of the model. The two encoding methods used were decision tree and decision tree encoded. The second encoding method lowered the cp and increased the accuracy compared to the first encoded model.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "encodeMedData <- MedData\n",
+    "levels(encodeMedData$seat.comfort) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$departure.arrival.time.convenient) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$food.and.drink) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$gate.location) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$inflight.wifi.service) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$inflight.entertainment) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$online.support) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$ease.of.online.booking) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$on.board.service) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$leg.room.service) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$baggage.handling) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$checkin.service) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$cleanliness) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "levels(encodeMedData$online.boarding) = c(\"bad\",\"bad\",\"medium\",\"medium\",\"good\",\"good\")\n",
+    "\n",
+    "set.seed(41)\n",
+    "\n",
+    "#Decision Tree \n",
+    "encodedt1 <- train(target ~.,data = MedData, method = \"rpart\", trControl = trainControl(method =\"cv\", number = 3, verboseIter =  TRUE))\n",
+    "set.seed(41)\n",
+    "\n",
+    "#Decision Tree Encoded\n",
+    "encodedt2 <- train(target ~.,data = encodeMedData, method = \"rpart\", trControl = trainControl(method =\"cv\", number = 3, verboseIter =  TRUE))\n",
+    "encodedt1\n",
+    "encodedt2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Predictive Models\n",
+    "The four models used for this project were a decision tree, glmnet, random forest, and neural network. The decision tree produced accuracies of 0.8295889 and 0.8605483. The glmnet’s produced accuracies of 0.8618459 and 0.8581035. The random forest produced accuracies of 0.9190253 and 0.8906067. The neural network produced accuracies of 0.8637357 and 0.8684512. Based off of accuracies the best model was the first random forest with an accuracy of 0.9190253.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Decision Tree"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "set.seed(41)\n",
+    "\n",
+    "#Decision Tree\n",
+    "dt1 <- train(target ~.,data = encodeMedData, method = \"rpart\", trControl = trainControl(method =\"cv\", number = 3, verboseIter =  TRUE))\n",
+    "#Decision Tree Tuned\n",
+    "myGrid1 = expand.grid(.cp=0.005)\n",
+    "\n",
+    "dt2 <- train(target ~.,data = encodeMedData, method = \"rpart\", trControl = trainControl(method =\"cv\", number = 3, verboseIter = TRUE), tuneGrid = myGrid1)\n",
+    "\n",
+    "dt1\n",
+    "dt2\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Glmnet"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#GLM\n",
+    "glm1 = train(target~., data = encodeMedData, method=\"glmnet\")\n",
+    "\n",
+    "#GLM Tuned\n",
+    "myGrid3 = expand.grid(.alpha=0:1,.lambda=seq(0.001,1,length=3))\n",
+    "glm2 = train(target~., data = encodeMedData, method=\"glmnet\", tuneGrid=myGrid3)\n",
+    "\n",
+    "glm1\n",
+    "glm2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Random Forest"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Random Forest\n",
+    "rf1 <- train(target ~.,data = encodeMedData, method = \"ranger\", trControl =      trainControl(method =\"cv\", number = 2, verboseIter = TRUE))\n",
+    "#Random Forest Tuned\n",
+    "myGrid2 = expand.grid(mtry = c(1:2), splitrule = c(\"gini\"), min.node.size = c(1:2))\n",
+    "\n",
+    "rf2 <- train(target ~.,data = encodeMedData, method = \"ranger\", trControl = trainControl(method =\"cv\", number = 2, verboseIter = TRUE), tuneGrid = myGrid2)\n",
+    "rf1\n",
+    "rf2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Neural Network"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Neural Network\n",
+    "nn1 = train(target~., data = encodeMedData, method=\"nnet\")\n",
+    "#Neural Network Tuned\n",
+    "myGrid4 = expand.grid(size = 3,decay=0.2)\n",
+    "nn2 = train(target~., data = encodeMedData, method=\"nnet\", tuneGrid = myGrid4)\n",
+    "\n",
+    "nn1\n",
+    "nn2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Conclusion\n",
+    "The overall best model which was implemented on this data was the random forest. There was no pre-processing. The resampling was cross-validated (2 fold). The summary of the sample sizes were 64,940 and 64,940. The mtry was 19. The splitrule was gini. The Accuracy was 0. 0.9190253. The tuning parameter was min.node.size, which held a constant value of 1. The was preformed using the median data set. The data was based on a scales of 0 to 5. Zero being not applicable and 5 being satisfied. \n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "3.5.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
