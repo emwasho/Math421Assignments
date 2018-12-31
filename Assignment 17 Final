@@ -1,0 +1,439 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "title: \"Assignment_17\"\n",
+    "author: \"Emma Washo\"\n",
+    "date: \"November 16, 2018\"\n",
+    "output: word_document\n",
+    "---\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Prepare Dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ERROR",
+     "evalue": "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\n",
+     "execution_count": 2,
+     "output_type": "error",
+     "traceback": [
+      "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\nTraceback:\n"
+     ]
+    }
+   ],
+   "source": [
+    "```{r}\n",
+    "\n",
+    "#Load packages\n",
+    "library(ggplot2)\n",
+    "library(caret)\n",
+    "library(lattice)\n",
+    "library(RANN)\n",
+    "\n",
+    "#Read and import car data saved as 'df'\n",
+    "car_data =read.csv(\"C:/Users/student/Documents/Bryant/Senior '18-'19/R/car.csv\")\n",
+    "str(car_data) \n",
+    "df = read.csv(\"car.csv\", header=TRUE)\n",
+    "\n",
+    "#For loop to make col names all lowercase\n",
+    "for(x in 1:ncol(df)) {\n",
+    "  colnames(df)[x] <- tolower(colnames(df)[x])\n",
+    "}\n",
+    "\n",
+    "df$year <- NULL\n",
+    "df$st_case <- NULL\n",
+    "df$trav_sp <- NULL\n",
+    "df$age = as.numeric(df$age)\n",
+    "df$month = as.factor(df$month)\n",
+    "df$mod_year = as.numeric(df$mod_year)\n",
+    "\n",
+    "df = df[df$hour != 99,]\n",
+    "df = df[df$sex != \"Unknown\",]\n",
+    "df = df[df$sex != \"Not Rep\",]\n",
+    "df = df[df$mod_year != \"Unknown\",]\n",
+    "df = df[df$mod_year != \"Not Rep\",]\n",
+    "df = df[df$deformed != \"Unknown\",]\n",
+    "df = df[df$deformed != \"Not Reported\",]\n",
+    "df = df[df$inj_sev != \"Unknown\",]\n",
+    "df = df[df$man_coll != \"Unknown\",]\n",
+    "df = df[df$owner != \"Unknown\",]\n",
+    "df = df[df$route != \"Unknown\",]\n",
+    "df = df[df$lgt_cond != \"Unknown\",]\n",
+    "df = df[df$lgt_cond != \"Not Reported\",]\n",
+    "df = df[df$weather != \"Unkno\",]\n",
+    "df = df[df$weather != \"Not R\",]\n",
+    "\n",
+    "##df = QuickClean(df, 1)\n",
+    "sum(is.na(df))\n",
+    "##465\n",
+    "\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Change target variable level"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ERROR",
+     "evalue": "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\n",
+     "execution_count": 3,
+     "output_type": "error",
+     "traceback": [
+      "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\nTraceback:\n"
+     ]
+    }
+   ],
+   "source": [
+    "```{r}\n",
+    "levels(df$inj_sev) = c(\"survived\",\"died\",\"survived\",\"survived\",\"survived\",\"survived\",\"survived\",\"survived\")\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Impute missing values data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ERROR",
+     "evalue": "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\n",
+     "execution_count": 4,
+     "output_type": "error",
+     "traceback": [
+      "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\nTraceback:\n"
+     ]
+    }
+   ],
+   "source": [
+    "```{r}\n",
+    "preProcess_med <- preProcess(df, method='medianImpute')\n",
+    "MedData <- predict(preProcess_med, newdata = df)\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Check for missing values"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ERROR",
+     "evalue": "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\n",
+     "execution_count": 5,
+     "output_type": "error",
+     "traceback": [
+      "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\nTraceback:\n"
+     ]
+    }
+   ],
+   "source": [
+    "```{r}\n",
+    "if(sum(is.na(MedData)) == 0) {\n",
+    "  print('0')\n",
+    "} else {\n",
+    "    for(x in 1:ncol(MedData)) {\n",
+    "      miss1 <- sum(is.na(MedData[x]))\n",
+    "      print(colnames(MedData)[x])\n",
+    "      print(miss1)\n",
+    "    }\n",
+    "  }\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Data Visualization"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ERROR",
+     "evalue": "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\n",
+     "execution_count": 6,
+     "output_type": "error",
+     "traceback": [
+      "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\nTraceback:\n"
+     ]
+    }
+   ],
+   "source": [
+    "```{r}\n",
+    "ggplot(data = MedData) + geom_bar(mapping = aes(x = inj_sev, fill = weather), position = \"dodge\")\n",
+    "\n",
+    "ggplot(data = MedData) + geom_bar(mapping = aes(x = inj_sev, fill = sex)) + facet_wrap(~sex)\n",
+    "\n",
+    "ggplot(data = MedData) + geom_density(mapping=aes(x = age, fill = inj_sev)) + facet_wrap(~inj_sev)\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Predictive Models\n",
+    "##Decision Tree"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ERROR",
+     "evalue": "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\n",
+     "execution_count": 7,
+     "output_type": "error",
+     "traceback": [
+      "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\nTraceback:\n"
+     ]
+    }
+   ],
+   "source": [
+    "```{r}\n",
+    "set.seed(41)\n",
+    "\n",
+    "#Decision Tree\n",
+    "dt1 <- train(inj_sev ~.,data = MedData, method = \"rpart\", \n",
+    "               trControl = trainControl(method =\"cv\", number = 3, verboseIter =  TRUE))\n",
+    "\n",
+    "#Decision Tree Tuned\n",
+    "myGrid1 = expand.grid(.cp=0.02)\n",
+    "\n",
+    "dt2 <- train(inj_sev ~.,data = MedData, method = \"rpart\", \n",
+    "               trControl = trainControl(method =\"cv\", number = 3, verboseIter = TRUE),\n",
+    "               tuneGrid = myGrid1)\n",
+    "\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Predictive Models\n",
+    "##Random Forest"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ERROR",
+     "evalue": "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\n",
+     "execution_count": 8,
+     "output_type": "error",
+     "traceback": [
+      "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\nTraceback:\n"
+     ]
+    }
+   ],
+   "source": [
+    "```{r}\n",
+    "set.seed(41)\n",
+    "\n",
+    "#Random Forest\n",
+    "rf1 <- train(inj_sev ~.,data = MedData, method = \"ranger\", \n",
+    "               trControl = trainControl(method =\"cv\", number = 3, verboseIter = TRUE))\n",
+    "\n",
+    "#Random Forest Tuned\n",
+    "myGrid2 = expand.grid(mtry = c(1:2), splitrule = c(\"gini\"),\n",
+    "                     min.node.size = c(1:2))\n",
+    "\n",
+    "rf2 <- train(inj_sev ~.,data = MedData, method = \"ranger\", \n",
+    "               trControl = trainControl(method =\"cv\", number = 3, verboseIter = TRUE),\n",
+    "               tuneGrid = myGrid2)\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Predictive Models\n",
+    "##GLM"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ERROR",
+     "evalue": "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\n",
+     "execution_count": 9,
+     "output_type": "error",
+     "traceback": [
+      "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\nTraceback:\n"
+     ]
+    }
+   ],
+   "source": [
+    "```{r}\n",
+    "set.seed(41)\n",
+    "#GLM\n",
+    "glm1 = train(inj_sev~., data = MedData, method=\"glmnet\")\n",
+    "\n",
+    "#GLM Tuned\n",
+    "myGrid3 = expand.grid(.alpha=0:1,.lambda=seq(0.001,1,length=3))\n",
+    "glm2 = train(inj_Sev~., data = MedData, method=\"glmnet\", tuneGrid=myGrid3)\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Decision Tree Accuracy"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ERROR",
+     "evalue": "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\n",
+     "execution_count": 10,
+     "output_type": "error",
+     "traceback": [
+      "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\nTraceback:\n"
+     ]
+    }
+   ],
+   "source": [
+    "```{r}\n",
+    "dt1\n",
+    "dt2\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Random Forest Accuracy"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ERROR",
+     "evalue": "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\n",
+     "execution_count": 11,
+     "output_type": "error",
+     "traceback": [
+      "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\nTraceback:\n"
+     ]
+    }
+   ],
+   "source": [
+    "```{r}\n",
+    "rf1\n",
+    "rf2\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##GLM Accuracy"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "ERROR",
+     "evalue": "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\n",
+     "execution_count": 12,
+     "output_type": "error",
+     "traceback": [
+      "Error in parse(text = x, srcfile = src): attempt to use zero-length variable name\nTraceback:\n"
+     ]
+    }
+   ],
+   "source": [
+    "```{r}\n",
+    "glm1\n",
+    "glm2\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "R",
+   "language": "R",
+   "name": "ir"
+  },
+  "language_info": {
+   "codemirror_mode": "r",
+   "file_extension": ".r",
+   "mimetype": "text/x-r-source",
+   "name": "R",
+   "pygments_lexer": "r",
+   "version": "3.5.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
